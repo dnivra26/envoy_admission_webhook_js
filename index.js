@@ -8,16 +8,19 @@ exports.addenvoy = function addenvoy (req, res) {
   console.log("admission request---")
   console.log(JSON.stringify(admissionRequest))
   console.log(`validating the ${object.metadata.name} pod`);
-
+  const newContainer = [
+    {"image":"dnivra26/todo_grpc_hello:0.1","name":"todogrpchello"}
+    ];
+  const allcontainers = object.spec.containers.concat(newContainer);
+  console.log("allcontainers----");
+  console.log(allcontainers);  
   var admissionResponse = {
     allowed: true,
     patch: toUTF8Array(JSON.stringify([
       {
         "op":"add",
         "path":"/spec/containers",
-        "value":[
-          {"image":"dnivra26/todo_grpc_hello:0.1","name":"todogrpchello"}
-          ]
+        "value":allcontainers
         }
       ])),
     patchType: "JSONPatch"
