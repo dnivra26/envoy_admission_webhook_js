@@ -1,19 +1,26 @@
 'use strict';
-
+const envoyContainer = require('./envoy-container.json');
+const envoyVolume = require('./envoy-volume.json');
 exports.addenvoy = function addenvoy (req, res) {
   var admissionRequest = req.body;
 
   // Get a reference to the pod spec
   var object = admissionRequest.request.object;
+
   console.log("admission request---")
   console.log(JSON.stringify(admissionRequest))
   console.log(`validating the ${object.metadata.name} pod`);
-  const newContainer = [
-    {"image":"dnivra26/todo_grpc_hello:0.1","name":"todogrpchello"}
-    ];
-  const allcontainers = object.spec.containers.concat(newContainer);
+
+  const allcontainers = object.spec.containers.concat([envoyContainer]);
+  const allvolumes = object.spec.volumes.concat([envoyVolume]);
+
   console.log("allcontainers----");
   console.log(allcontainers);  
+
+  console.log("allvolumes----");
+  console.log(allvolumes);  
+  
+  
   var admissionResponse = {
     allowed: true,
     patch: toUTF8Array(JSON.stringify([
@@ -21,7 +28,12 @@ exports.addenvoy = function addenvoy (req, res) {
         "op":"add",
         "path":"/spec/containers",
         "value":allcontainers
-        }
+      },
+      {
+        "op":"add",
+        "path":"/spec/volumes",
+        "value":allvolumes
+      }
       ])),
     patchType: "JSONPatch"
   };

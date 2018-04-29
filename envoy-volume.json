@@ -1,0 +1,12 @@
+{
+    "name": "envoy-config-volume",
+    "configMap": {
+       "name": "sidecar-config",
+       "items": [
+          {
+             "key": "envoy-config",
+             "path": "config.yaml"
+          }
+       ]
+    }
+ }
