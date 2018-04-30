@@ -11,19 +11,23 @@ exports.addenvoy = function addenvoy (req, res) {
   console.log(JSON.stringify(admissionRequest))
   console.log(`validating the ${object.metadata.name} pod`);
 
-  const allcontainers = object.spec.containers.concat([envoyContainer]);
-  const allvolumes = object.spec.volumes.concat([envoyVolume]);
-
-  console.log("allcontainers----");
-  console.log(allcontainers);  
-
-  console.log("allvolumes----");
-  console.log(allvolumes);  
-  
-  
+  const labels = object.metadata.labels;
   var admissionResponse = {
     allowed: true,
-    patch: toUTF8Array(JSON.stringify([
+  };
+
+  if(labels['envoy-injection']=='enabled') {
+    console.log('envoy-injection enabled. adding patch...')
+    const allcontainers = object.spec.containers.concat([envoyContainer]);
+    const allvolumes = object.spec.volumes.concat([envoyVolume]);
+
+    console.log("allcontainers----");
+    console.log(allcontainers);  
+
+    console.log("allvolumes----");
+    console.log(allvolumes);  
+    admissionResponse.patchType = "JSONPatch"
+    admissionResponse.patch = toUTF8Array(JSON.stringify([
       {
         "op":"add",
         "path":"/spec/containers",
@@ -34,9 +38,10 @@ exports.addenvoy = function addenvoy (req, res) {
         "path":"/spec/volumes",
         "value":allvolumes
       }
-      ])),
-    patchType: "JSONPatch"
-  };
+      ]))
+  } else {
+    console.log('envoy-injection not enabled. skipping pod...')
+  }
 
   var admissionReview = {
     response: admissionResponse
